@@ -1,0 +1,656 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Allgemeinwissen XXL 2025 - Quiz</title>
+    <style>
+        :root {
+            --primary-color: #c9236e;
+            --secondary-color: #1e88be;
+            --dark-bg: #0a0a2a;
+            --light-text: #ffffff;
+            --correct-color: #28a745;
+            --incorrect-color: #dc3545;
+            --neutral-color: #6c757d;
+            --transition: all 0.3s ease;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background-color: var(--dark-bg);
+            background-image: radial-gradient(circle, rgba(30, 136, 190, 0.1) 1px, transparent 1px);
+            background-size: 20px 20px;
+            color: var(--light-text);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+            overflow-x: hidden;
+        }
+        
+        /* Header */
+        header {
+            padding: 20px;
+            text-align: center;
+            background: linear-gradient(90deg, var(--primary-color), var(--secondary-color));
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+        }
+        
+        header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+        }
+        
+        /* Main Content */
+        main {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 30px;
+        }
+        
+        .quiz-container {
+            width: 100%;
+            max-width: 800px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 15px;
+            overflow: hidden;
+            box-shadow: 0 8px 32px rgba(31, 38, 135, 0.2);
+            backdrop-filter: blur(4px);
+            border: 1px solid rgba(255, 255, 255, 0.18);
+            transition: var(--transition);
+            position: relative;
+        }
+        
+        /* Progress Bar */
+        .progress-container {
+            width: 100%;
+            height: 10px;
+            background-color: rgba(255, 255, 255, 0.1);
+        }
+        
+        .progress-bar {
+            height: 100%;
+            background: linear-gradient(90deg, var(--primary-color), var(--secondary-color));
+            width: 0%;
+            transition: width 0.5s ease;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .progress-bar::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(
+                90deg, 
+                transparent, 
+                rgba(255, 255, 255, 0.2), 
+                transparent
+            );
+            animation: shimmer 2s infinite;
+        }
+        
+        @keyframes shimmer {
+            0% {
+                transform: translateX(-100%);
+            }
+            100% {
+                transform: translateX(100%);
+            }
+        }
+        
+        /* Question Area */
+        .question-area {
+            padding: 30px;
+        }
+        
+        .question {
+            font-size: 1.5rem;
+            margin-bottom: 20px;
+            text-align: center;
+            color: var(--light-text);
+            position: relative;
+            padding: 10px;
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 10px;
+        }
+        
+        .question::before {
+            content: '';
+            position: absolute;
+            top: -5px;
+            left: -5px;
+            right: -5px;
+            bottom: -5px;
+            background: linear-gradient(45deg, var(--primary-color), var(--secondary-color));
+            z-index: -1;
+            border-radius: 15px;
+            opacity: 0.5;
+        }
+        
+        /* Answers */
+        .answers {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
+        
+        .answer-btn {
+            padding: 15px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            background: rgba(255, 255, 255, 0.05);
+            color: var(--light-text);
+            border-radius: 8px;
+            cursor: pointer;
+            transition: var(--transition);
+            font-size: 1.1rem;
+            display: flex;
+            align-items: center;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .answer-btn:hover {
+            background: rgba(255, 255, 255, 0.1);
+            transform: translateY(-3px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+        
+        .answer-btn .letter {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 30px;
+            height: 30px;
+            margin-right: 10px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 50%;
+            font-weight: bold;
+        }
+        
+        .answer-btn.correct {
+            background-color: var(--correct-color);
+            color: white;
+            transform: none;
+        }
+        
+        .answer-btn.incorrect {
+            background-color: var(--incorrect-color);
+            color: white;
+            transform: none;
+        }
+        
+        .answer-btn.neutral {
+            background-color: var(--neutral-color);
+            color: white;
+            transform: none;
+        }
+        
+        /* Result Message */
+        .result-message {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 8px;
+            text-align: center;
+            opacity: 0;
+            transform: translateY(20px);
+            transition: all 0.5s ease;
+        }
+        
+        .result-message.show {
+            opacity: 1;
+            transform: translateY(0);
+        }
+        
+        .result-message.correct {
+            background-color: rgba(40, 167, 69, 0.2);
+            border: 1px solid var(--correct-color);
+        }
+        
+        .result-message.incorrect {
+            background-color: rgba(220, 53, 69, 0.2);
+            border: 1px solid var(--incorrect-color);
+        }
+        
+        /* Next Button */
+        .next-btn {
+            margin-top: 20px;
+            padding: 12px 25px;
+            background: linear-gradient(45deg, var(--primary-color), var(--secondary-color));
+            color: white;
+            border: none;
+            border-radius: 50px;
+            cursor: pointer;
+            font-size: 1.1rem;
+            font-weight: bold;
+            display: block;
+            width: 100%;
+            opacity: 0;
+            transform: translateY(20px);
+            transition: all 0.5s ease;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .next-btn.show {
+            opacity: 1;
+            transform: translateY(0);
+        }
+        
+        .next-btn:hover {
+            box-shadow: 0 5px 15px rgba(201, 35, 110, 0.5);
+            transform: translateY(-3px);
+        }
+        
+        .next-btn::after {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: linear-gradient(
+                transparent, 
+                rgba(255, 255, 255, 0.2), 
+                transparent
+            );
+            transform: rotate(45deg);
+            transition: all 0.8s;
+        }
+        
+        .next-btn:hover::after {
+            left: 100%;
+        }
+        
+        /* Results Screen */
+        .results-container {
+            padding: 30px;
+            text-align: center;
+            display: none;
+        }
+        
+        .results-container.show {
+            display: block;
+        }
+        
+        .results-container h2 {
+            font-size: 2rem;
+            margin-bottom: 20px;
+            color: var(--secondary-color);
+        }
+        
+        .results-container p {
+            font-size: 1.2rem;
+            margin-bottom: 15px;
+        }
+        
+        .score {
+            font-size: 4rem;
+            font-weight: bold;
+            margin: 20px 0;
+            color: var(--primary-color);
+        }
+        
+        .restart-btn, .home-btn {
+            padding: 12px 25px;
+            margin: 10px;
+            border: none;
+            border-radius: 50px;
+            cursor: pointer;
+            font-size: 1.1rem;
+            font-weight: bold;
+            transition: var(--transition);
+        }
+        
+        .restart-btn {
+            background: linear-gradient(45deg, var(--primary-color), var(--secondary-color));
+            color: white;
+        }
+        
+        .home-btn {
+            background: rgba(255, 255, 255, 0.1);
+            color: var(--light-text);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        
+        .restart-btn:hover, .home-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+        
+        /* Responsive */
+        @media (max-width: 768px) {
+            .answers {
+                grid-template-columns: 1fr;
+            }
+            
+            .question {
+                font-size: 1.3rem;
+            }
+            
+            .answer-btn {
+                padding: 12px;
+                font-size: 1rem;
+            }
+        }
+        
+        /* Animations */
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        .fade-in {
+            animation: fadeIn 0.5s ease forwards;
+        }
+        
+        /* "Who Wants to Be a Millionaire" style spotlight */
+        .spotlight {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(
+                circle at center, 
+                transparent 30%, 
+                rgba(0, 0, 0, 0.8) 70%
+            );
+            opacity: 0;
+            transition: opacity 1s ease;
+            pointer-events: none;
+            z-index: -1;
+        }
+        
+        .spotlight.show {
+            opacity: 1;
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header>
+        <h1>Allgemeinwissen XXL 2025</h1>
+        <p>Testen Sie Ihr Wissen mit unserem interaktiven Quiz</p>
+    </header>
+    
+    <!-- Main Content -->
+    <main>
+        <div class="quiz-container">
+            <!-- Progress Bar -->
+            <div class="progress-container">
+                <div class="progress-bar" id="progress"></div>
+            </div>
+            
+            <!-- Question Area -->
+            <div class="question-area">
+                <h2 class="question" id="question">Frage wird geladen...</h2>
+                <div class="answers" id="answers">
+                    <!-- Answer buttons will be inserted here by JavaScript -->
+                </div>
+                <div class="result-message" id="result-message"></div>
+                <button class="next-btn" id="next-btn">Nächste Frage</button>
+            </div>
+            
+            <!-- Results Screen (initially hidden) -->
+            <div class="results-container" id="results-container">
+                <h2>Quiz beendet!</h2>
+                <p>Ihre Ergebnis:</p>
+                <div class="score" id="score">0/0</div>
+                <p id="result-text">Danke fürs Mitspielen!</p>
+                <div>
+                    <button class="restart-btn" id="restart-btn">Quiz neu starten</button>
+                    <button class="home-btn" id="home-btn">Zurück zur Startseite</button>
+                </div>
+            </div>
+        </div>
+    </main>
+    
+    <!-- Spotlight Effect -->
+    <div class="spotlight" id="spotlight"></div>
+    
+    <script>
+        // Quiz questions and answers
+        const quizData = [
+            {
+                question: "Welcher Planet ist der größte im Sonnensystem?",
+                answers: [
+                    { text: "Erde", correct: false },
+                    { text: "Jupiter", correct: true },
+                    { text: "Saturn", correct: false },
+                    { text: "Mars", correct: false }
+                ]
+            },
+            {
+                question: "In welchem Jahr begann der Zweite Weltkrieg?",
+                answers: [
+                    { text: "1936", correct: false },
+                    { text: "1939", correct: true },
+                    { text: "1941", correct: false },
+                    { text: "1945", correct: false }
+                ]
+            },
+            {
+                question: "Welches Element hat das chemische Symbol 'O'?",
+                answers: [
+                    { text: "Gold", correct: false },
+                    { text: "Sauerstoff", correct: true },
+                    { text: "Eisen", correct: false },
+                    { text: "Wasserstoff", correct: false }
+                ]
+            },
+            {
+                question: "Wer schrieb das Buch 'Die Verwandlung'?",
+                answers: [
+                    { text: "Franz Kafka", correct: true },
+                    { text: "Johann Wolfgang von Goethe", correct: false },
+                    { text: "Thomas Mann", correct: false },
+                    { text: "Hermann Hesse", correct: false }
+                ]
+            },
+            {
+                question: "Welche Stadt ist die Hauptstadt von Australien?",
+                answers: [
+                    { text: "Sydney", correct: false },
+                    { text: "Melbourne", correct: false },
+                    { text: "Canberra", correct: true },
+                    { text: "Perth", correct: false }
+                ]
+            }
+        ];
+        
+        // DOM elements
+        const questionElement = document.getElementById('question');
+        const answersElement = document.getElementById('answers');
+        const resultMessageElement = document.getElementById('result-message');
+        const nextButton = document.getElementById('next-btn');
+        const progressBar = document.getElementById('progress');
+        const resultsContainer = document.getElementById('results-container');
+        const questionArea = document.querySelector('.question-area');
+        const scoreElement = document.getElementById('score');
+        const resultTextElement = document.getElementById('result-text');
+        const restartButton = document.getElementById('restart-btn');
+        const homeButton = document.getElementById('home-btn');
+        const spotlight = document.getElementById('spotlight');
+        
+        // Quiz state
+        let currentQuestionIndex = 0;
+        let score = 0;
+        let userAnswered = false;
+        
+        // Initialize the quiz
+        function initQuiz() {
+            currentQuestionIndex = 0;
+            score = 0;
+            userAnswered = false;
+            
+            // Show the first question
+            showQuestion();
+            
+            // Update the progress bar
+            updateProgressBar();
+            
+            // Hide the results container and show the question area
+            resultsContainer.classList.remove('show');
+            questionArea.style.display = 'block';
+        }
+        
+        // Show the current question
+        function showQuestion() {
+            // Reset state
+            userAnswered = false;
+            resultMessageElement.className = 'result-message';
+            resultMessageElement.textContent = '';
+            nextButton.classList.remove('show');
+            
+            // Get the current question data
+            const questionData = quizData[currentQuestionIndex];
+            
+            // Set the question text
+            questionElement.textContent = questionData.question;
+            
+            // Clear previous answers
+            answersElement.innerHTML = '';
+            
+            // Create answer buttons
+            const letters = ['A', 'B', 'C', 'D'];
+            questionData.answers.forEach((answer, index) => {
+                const button = document.createElement('button');
+                button.classList.add('answer-btn', 'fade-in');
+                button.style.animationDelay = `${index * 0.1}s`;
+                
+                const letterSpan = document.createElement('span');
+                letterSpan.classList.add('letter');
+                letterSpan.textContent = letters[index];
+                
+                const textSpan = document.createElement('span');
+                textSpan.textContent = answer.text;
+                
+                button.appendChild(letterSpan);
+                button.appendChild(textSpan);
+                
+                button.addEventListener('click', () => selectAnswer(index));
+                
+                answersElement.appendChild(button);
+            });
+        }
+        
+        // Handle answer selection
+        function selectAnswer(index) {
+            // Prevent multiple selections
+            if (userAnswered) return;
+            
+            userAnswered = true;
+            const questionData = quizData[currentQuestionIndex];
+            const answerButtons = document.querySelectorAll('.answer-btn');
+            
+            // Show spotlight effect
+            spotlight.classList.add('show');
+            setTimeout(() => {
+                spotlight.classList.remove('show');
+            }, 1000);
+            
+            // Check if the answer is correct
+            const isCorrect = questionData.answers[index].correct;
+            
+            // Mark selected answer
+            if (isCorrect) {
+                answerButtons[index].classList.add('correct');
+                score++;
+                resultMessageElement.textContent = 'Richtig! 👏';
+                resultMessageElement.classList.add('correct', 'show');
+            } else {
+                answerButtons[index].classList.add('incorrect');
+                resultMessageElement.textContent = 'Falsch! Die richtige Antwort ist: ';
+                resultMessageElement.classList.add('incorrect', 'show');
+                
+                // Find and mark the correct answer
+                questionData.answers.forEach((answer, idx) => {
+                    if (answer.correct) {
+                        answerButtons[idx].classList.add('correct');
+                        resultMessageElement.textContent += answer.text;
+                    } else if (idx !== index) {
+                        answerButtons[idx].classList.add('neutral');
+                    }
+                });
+            }
+            
+            // Show next button
+            nextButton.classList.add('show');
+        }
+        
+        // Move to the next question or end the quiz
+        function nextQuestion() {
+            currentQuestionIndex++;
+            
+            // Update the progress bar
+            updateProgressBar();
+            
+            if (currentQuestionIndex < quizData.length) {
+                showQuestion();
+            } else {
+                endQuiz();
+            }
+        }
+        
+        // Update the progress bar
+        function updateProgressBar() {
+            const progressPercentage = (currentQuestionIndex / quizData.length) * 100;
+            progressBar.style.width = `${progressPercentage}%`;
+        }
+        
+        // End the quiz and show results
+        function endQuiz() {
+            questionArea.style.display = 'none';
+            resultsContainer.classList.add('show');
+            
+            scoreElement.textContent = `${score}/${quizData.length}`;
+            
+            // Determine result message based on score
+            const percentage = (score / quizData.length) * 100;
+            
+            if (percentage === 100) {
+                resultTextElement.textContent = 'Perfekt! Sie sind ein Quizmeister!';
+            } else if (percentage >= 80) {
+                resultTextElement.textContent = 'Sehr gut! Sie haben umfassendes Allgemeinwissen!';
+            } else if (percentage >= 60) {
+                resultTextElement.textContent = 'Gut gemacht! Sie kennen sich gut aus!';
+            } else if (percentage >= 40) {
+                resultTextElement.textContent = 'Nicht schlecht! Mit etwas mehr Wissen können Sie sich verbessern.';
+            } else {
+                resultTextElement.textContent = 'Es gibt noch Raum für Verbesserung. Vielleicht hilft Ihnen unser Buch!';
+            }
+        }
+        
+        // Event listeners
+        nextButton.addEventListener('click', nextQuestion);
+        restartButton.addEventListener('click', initQuiz);
+        homeButton.addEventListener('click', () => {
+            window.location.href = 'index.html';
+        });
+        
+        // Start the quiz when the page loads
+        window.addEventListener('load', initQuiz);
+    </script>
+</body>
+</html>
